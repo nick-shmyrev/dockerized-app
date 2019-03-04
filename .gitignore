@@ -1,0 +1,4 @@
+node_modules/
+.idea/
+server/config/config.json
+client/dist
