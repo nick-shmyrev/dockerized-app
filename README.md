@@ -27,6 +27,8 @@ Install <a href="https://docs.docker.com/install/">Docker</a> & <a href="https:/
 
 Clone this repository & navigate into repo folder.
 
+Create `.env` file in the root of the project using `example.env` as a template.
+
 Run `docker-compose up` to build the containers and start the app.
 
 By default, app will be available at <a href="http://localhost:80">localhost:80</a>.
