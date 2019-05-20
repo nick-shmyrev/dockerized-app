@@ -1,6 +1,6 @@
 <template>
 <header>
-  <h1>JMIR Contacts App</h1>
+  <h1>Dockerized Contacts App</h1>
 </header>
 </template>
 

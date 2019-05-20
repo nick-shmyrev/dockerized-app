@@ -1,0 +1,89 @@
+version: '3'
+
+
+services:
+
+    # Traefik reverse proxy
+    reverse-proxy:
+        image: traefik:alpine
+        restart: on-failure
+        command:
+            - --docker # Tells Traefik to listen to docker
+            - --api    # Enables the web UI
+        ports:
+            - 80:80     # The HTTP port
+            - 9000:8080 # The Web UI (enabled by --api), mapped to port 9000 to resolve conflict with client port
+        labels:
+            - "traefik.port=8080"
+            - "traefik.enable=false"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock # So that Traefik can listen to the Docker events
+        networks:
+            - reverse-proxy
+
+    # Vue.js front-end
+    client:
+        build: ./client
+        restart: on-failure
+        command: npm run serve
+        volumes:
+            - ./client:/usr/src/app
+            - client-node_modules:/usr/src/app/node_modules
+        expose:
+            - 8080
+        networks:
+            - reverse-proxy
+        depends_on:
+            - server
+        labels:
+            - "traefik.frontend.rule=Host:localhost"
+            - "traefik.enable=true"
+
+    # Node.js API
+    server:
+        build: ./server
+        restart: on-failure
+        command: npm run dev
+        environment:
+            DB_HOST:    ${DB_HOST}
+            DB_USER:    ${DB_USER}
+            DB_PASS:    ${DB_PASS}
+            DB_DB:      ${DB_DB}
+        volumes:
+            - ./server:/usr/src/app
+            - server-node_modules:/usr/src/app/node_modules
+        expose:
+            - 3000
+        networks:
+            - reverse-proxy
+        depends_on:
+            - mysql
+        labels:
+            - "traefik.frontend.rule=PathPrefix: /api"
+            - "traefik.enable=true"
+
+    # MySQL DB
+    mysql:
+        build: ./mysql
+        restart: on-failure
+        hostname: ${DB_HOST}
+        environment:
+            MYSQL_ROOT_PASSWORD:    ${DB_ROOT_PASS}
+            MYSQL_DATABASE:         ${DB_DB}
+            MYSQL_USER:             ${DB_USER}
+            MYSQL_PASSWORD:         ${DB_PASS}
+        networks:
+            - reverse-proxy
+        labels:
+            - "traefik.enable=false"
+
+
+# Explicitly define and label volumes
+volumes:
+    client-node_modules:
+    server-node_modules:
+
+# Define internal docker network
+networks:
+    reverse-proxy:
+        driver: bridge

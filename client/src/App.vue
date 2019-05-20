@@ -2,7 +2,10 @@
   <div id="app">
     <Header/>
     
-    <Form :contacts="contacts"/>
+    <Form
+      :contacts="contacts"
+      v-on:addContact="addContact($event)"
+    />
     
     <table>
       <thead>
@@ -11,7 +14,12 @@
         </tr>
       </thead>
       <tbody>
-        <Contact v-for="contact in contacts" :contact="contact" :key="contact.contact_id"/>
+        <Contact
+          v-for="contact in contacts"
+          :contact="contact"
+          :key="contact.contact_id"
+          v-on:removeContact="removeContact($event)"
+        />
       </tbody>
     </table>
     
@@ -39,8 +47,36 @@ export default {
   },
   mounted() {
     axios.get('/api/contacts')
-         .then(response => this.contacts = response.data)
-         .catch(e => console.log(e));
+      .then(response => this.contacts = response.data)
+      .catch(e => console.log(e));
+  },
+  methods: {
+    addContact: function(contact) {
+      const body = contact;
+      const options = {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      };
+      
+      axios.post('/api/contacts', body, options)
+        .then(response => {
+          if (response.status === 200) {
+            this.contacts.push({ ...body, contact_id: response.data.insertId });
+          }
+        })
+        .catch(e => console.log(e));
+    },
+    removeContact: function(id) {
+      axios.delete(`/api/contacts/${id}`)
+        .then(response => {
+          if (response.status === 200) {
+            const { deletedId } = response.data;
+            this.contacts = this.contacts.filter(el => el.contact_id !== deletedId);
+          }
+        })
+        .catch(e => console.log(e));
+    }
   }
 }
 </script>

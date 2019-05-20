@@ -1,28 +1,25 @@
-// Import config, set env variables
-require('./config/config');
-
 const express = require('express');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 const bodyParser = require('body-parser');
-const path = require('path');
-const publicPath = path.resolve(__dirname, '../client/dist');
+const cors = require('cors');
+
 const db = require('./db/mysql');
 
+app.use(cors());
 
-// Route for serving SPA
-app.get('/', express.static(path.resolve(__dirname, publicPath)));
-
-app.use(express.static('../client/dist'));
+app.get('/api', (req, res) => {
+  res.sendStatus(418);
+});
 
 // API route for requesting contacts data
 app.get('/api/contacts', (req, res) => {
   try {
     const sql = "SELECT * FROM contacts";
-    
+
     db.query(sql, (err, result) => {
       if (err) throw err;
-    
+
       res.status(200).json(result);
     });
   }
@@ -32,11 +29,8 @@ app.get('/api/contacts', (req, res) => {
   }
 });
 
-
 // API route for adding contacts
-app.use(bodyParser.json());
-
-app.post('/api/contacts', (req, res) => {
+app.post('/api/contacts', bodyParser.json(), (req, res) => {
   try {
     const name = db.escape(req.body.contact_name);
     const phone = db.escape(req.body.contact_phone);
@@ -49,6 +43,24 @@ app.post('/api/contacts', (req, res) => {
       if (err) throw err;
       
       res.status(200).send({ insertId: result.insertId });
+    });
+  }
+  catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+});
+
+app.delete('/api/contacts/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const sql = `DELETE FROM contacts
+                 WHERE contact_id = ${id}`;
+    
+    db.query(sql, (err, result) => {
+      if (err) throw err;
+      
+      res.status(200).send({ deletedId: Number(id) });
     });
   }
   catch (err) {

@@ -1,9 +1,0 @@
-{
-  "development": {
-    "PORT": 3000,
-    "DB_HOST": "localhost",
-    "DB_USER": "JMIR_test",
-    "DB_PASS": "JMIR_test",
-    "DB_DB": "jmir_contacts"
-  }
-}

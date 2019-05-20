@@ -1,5 +1,5 @@
 <template>
-  <form v-on:submit="formSubmit">
+  <form v-on:submit.prevent="handleFormSubmit">
     <h3>Contact Form</h3>
     
     <label>
@@ -22,33 +22,19 @@
 </template>
 
 <script>
-  import axios from 'axios';
-  
   export default {
     name: "Form",
     props: ['contacts'],
     methods: {
-      formSubmit: function (event) {
-        event.preventDefault();
-        
-        const body = {
+      handleFormSubmit: function (event) {
+        const contact = {
           contact_name: event.target.contact_name.value,
           contact_phone: event.target.contact_phone.value,
           contact_address: event.target.contact_address.value
         };
-        const options = {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        };
         
-        axios.post('/api/contacts', body, options)
-             .then(response => {
-               if (response.status === 200) {
-                 this.contacts.push({ ...body, contact_id: response.data.insertId });
-                 event.target.reset();
-               }
-             });
+        this.$emit('addContact', contact);
+        event.target.reset();
       }
     }
   }
