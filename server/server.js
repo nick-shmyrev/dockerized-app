@@ -1,7 +1,6 @@
 const express = require('express');
 const app = express();
 const PORT = 3000;
-const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const db = require('./db/mysql');
@@ -30,7 +29,7 @@ app.get('/api/contacts', (req, res) => {
 });
 
 // API route for adding contacts
-app.post('/api/contacts', bodyParser.json(), (req, res) => {
+app.post('/api/contacts', express.json(), (req, res) => {
   try {
     const name = db.escape(req.body.contact_name);
     const phone = db.escape(req.body.contact_phone);
