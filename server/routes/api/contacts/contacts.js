@@ -8,7 +8,7 @@ router.route('/contacts')
   // API route for requesting contacts data
   .get((req, res) => {
     try {
-      const sql = `SELECT contact_name, contact_phone, contact_address
+      const sql = `SELECT contact_id, contact_name, contact_phone, contact_address
                    FROM contacts`;
       
       db.query(sql, (err, result) => {
