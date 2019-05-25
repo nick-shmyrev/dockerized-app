@@ -38,7 +38,7 @@ router.route('/contacts')
         res.status(200).send({ insertId: result.insertId });
       });
     }
-    catch (err) {
+    catch(err) {
       console.log(err);
       res.sendStatus(500);
     }
@@ -46,10 +46,35 @@ router.route('/contacts')
 
 router.route('/contacts/:id')
   // API route for updating contacts
-  // .patch((req, res) => {
-  //   // TODO: add update logic
-  //   console.log(`PATCH request for contact id ${req.params.id}`);
-  // })
+  .patch(express.json(), (req, res) => {
+    try {
+      const { id } = req.params;
+      const name = db.escape(req.body.contact_name);
+      const phone = db.escape(req.body.contact_phone);
+      const address = db.escape(req.body.contact_address);
+      
+      const sql = `UPDATE contacts
+                   SET contact_name = ${name},
+                       contact_phone = ${phone},
+                       contact_address = ${address}
+                   WHERE contact_id = ${id};`;
+      
+      db.query(sql, (err, result) => {
+        if (err) throw err;
+        
+        res.status(200).send({
+          contact_id: id,
+          contact_name: name,
+          contact_phone: phone,
+          contact_address: address
+        });
+      });
+    }
+    catch(err) {
+      console.log(err);
+      res.sendStatus(500);
+    }
+  })
   // API route for deleting contacts
   .delete((req, res) => {
     try {
@@ -63,7 +88,7 @@ router.route('/contacts/:id')
         res.status(200).send({ deletedId: Number(id) });
       });
     }
-    catch (err) {
+    catch(err) {
       console.log(err);
       res.sendStatus(500);
     }
